@@ -10,20 +10,34 @@ import { asideMenuConfig } from '../../../../menuConfig';
 import UserState from './../../../../mobx/UserState';
 import UserAjax from './../../../../Controller/UserController'
 import './Aside.scss';
-
 @withRouter
-export default class BasicLayout extends Component {
+ class BasicLayout extends Component {
+
+  state={
+    isLogin:true,
+    user:{}
+  }
   componentDidMount(){
-    this.autoLogin();
+    this.autoLogin()
   }
   autoLogin(){
     UserAjax.autoLogin().then((res)=>{
+      if(res.data.status===0){
+        UserState.login(res.data.data);
+        this.setState({
+          user:res.data.data
+        })
+      }else{
+        this.setState({
+          isLogin:false
+        })
+      }
     })
   }
   render() {
     const { location } = this.props;
     const { pathname } = location;
-
+  
     return (
       <div className="aside-custom-menu">
         <Logo
@@ -37,28 +51,27 @@ export default class BasicLayout extends Component {
           }}
         />
  
-        {
-             UserState.user.isLogin?<div className="user-info">
-             <IceImg
-               height={40}
-               width={40}
-               src={require("./../Header/images/avatar.png")}
-               className="user-avatar"
-             />
-             <Notify
-               style={{ position: 'relative', left: ' -4px', top: '-12px' }}
-             />
-             <div className="user-profile">
-               <span className="user-name" style={{ fontSize: '13px' }}>
-                 {UserState.user.username}
-               </span>
-               <br />
-               <span className="user-department"> {UserState.user.email}</span>
-             </div>
-           </div>:undefined
-          //  <Redirect to="/user/login"/>
-        }
-
+      {
+        this.state.isLogin? <div className="user-info">
+        <IceImg
+          height={40}
+          width={40}
+          src={require("./../Header/images/avatar.png")}
+          className="user-avatar"
+        />
+        <Notify
+          style={{ position: 'relative', left: ' -4px', top: '-12px' }}
+        />
+       
+        <div className="user-profile">
+          <span className="user-name" style={{ fontSize: '13px' }}>
+            {this.state.user.username}
+          </span>
+          <br />
+          <span className="user-department"> {this.state.user.email}</span>
+        </div>
+      </div>:<Redirect to="/user/login"/>
+      }
         <Nav
           mode="inline"
           selectedKeys={[pathname]}
@@ -84,3 +97,4 @@ export default class BasicLayout extends Component {
     );
   }
 }
+export default BasicLayout

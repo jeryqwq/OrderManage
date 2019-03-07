@@ -4,7 +4,7 @@ module.exports = (router) => {
   router.prefix('/api');
   router
     .get('/dashboard', userController.dashboard)
-    .post('/login', userController.login)
+    .get('/orderInfos', userController.orderInfos)
     .post('/register', userController.register)
     .post('/logout', userController.logout);
 };

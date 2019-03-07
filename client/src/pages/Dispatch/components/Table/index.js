@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import { Table, Pagination, Button, Dialog } from '@alifd/next';
 import IceContainer from '@icedesign/container';
-import Filter from '../Filter';
 import Overview from '../Overview';
-
+import UserAjax from './../../../../Controller/UserController'
 // Random Numbers
 const random = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1) + min);
@@ -31,75 +30,39 @@ const getOverviewData = () => {
   ];
 };
 
-const getTableData = (length = 10) => {
-  return Array.from({ length }).map(() => {
-    return {
-      serialNumber: `HZ${random(1000000, 2000000)}`,
-      orderNumber: random(10000000, 100000000),
-      name: ['蓝牙音箱', '天猫精灵', '智能机器人'][random(0, 2)],
-      spec: '- -',
-      dispatchTime: `2019-01-1${random(1, 9)}`,
-      orderTime: `2018-12-1${random(1, 9)}`,
-      quantity: random(500, 1000),
-      delivery: random(100, 500),
-      amount: `￥ ${random(2000, 10000)}`,
-    };
-  });
-};
 
 export default class ReserveTable extends Component {
   state = {
     current: 1,
     isLoading: false,
     data: [],
+    isLoading: true,
+    data: undefined,
+    pageSize:8,
+    total:0,
     overviewData: getOverviewData(),
   };
 
   componentDidMount() {
-    this.fetchData();
+    this.getData()
   }
-
-  mockApi = (len) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(getTableData(len));
-      }, 600);
-    });
-  };
-
-  fetchData = (len) => {
-    this.setState(
-      {
-        isLoading: true,
-      },
-      () => {
-        this.mockApi(len).then((data) => {
-          this.setState({
-            data,
-            isLoading: false,
-            overviewData: getOverviewData(),
-          });
-        });
+  getData(){
+    this.setState({
+      isLoading: true
+    })
+    UserAjax.orderList(this.state.pageSize,this.state.current).then((res)=>{
+      if(res.data.status===0){
+        this.setState({
+          data:res.data.data.list,
+          isLoading:false,
+          total:res.data.data.total
+        })
       }
-    );
-  };
-
-  handlePaginationChange = (current) => {
-    this.setState(
-      {
-        current,
-      },
-      () => {
-        this.fetchData();
-      }
-    );
-  };
-
-  handleFilterChange = () => {
-    this.fetchData(5);
-  };
-
-  handleDelete = () => {
+    })
+  }
+  
+  handleDelete(val) {
+    console.log(val)
     Dialog.confirm({
       title: '提示',
       content: '确认删除吗',
@@ -108,7 +71,6 @@ export default class ReserveTable extends Component {
       },
     });
   };
-
   handleDetail = () => {
     Dialog.confirm({
       title: '提示',
@@ -116,32 +78,87 @@ export default class ReserveTable extends Component {
     });
   };
 
-  renderOper = () => {
+  renderOper =val => {
     return (
       <div>
         <Button
           type="primary"
           style={{ marginRight: '5px' }}
-          onClick={this.handleDetail}
+          onClick={()=>{
+            console.log(val)
+          }}
         >
           详情
         </Button>
-        <Button type="normal" warning onClick={this.handleDelete}>
+        <Button type="normal" warning onClick={()=>{
+          this.handleDelete(val)
+        }}>
           删除
         </Button>
       </div>
     );
   };
-
+  renderOrderTable(){
+    const { isLoading, current } = this.state;
+    const getTableData = () => {
+      return this.state.data.map((item,index) => {
+        return {
+          orderNo:item.orderNo,
+          payment: item.payment,
+          paymentTime:item.paymentTime,
+          paymentTypeDesc:item.paymentTypeDesc,
+          receiverProvince: item.shippingVo==undefined?"用户已删除":item.shippingVo.receiverProvince,
+          receiverAddress: item.shippingVo==undefined?"用户已删除":item.shippingVo.receiverAddress,
+          orderItemVoList: item.orderItemVoList.length,
+          statusDesc:item.statusDesc,
+          receverName: item.statusDesc,
+        };
+      });
+    };
+    return (
+      this.state.data?<div style={styles.container}>
+      <Table loading={isLoading} dataSource={getTableData()} hasBorder={false}>
+        <Table.Column title="流水号" dataIndex="orderNo" />
+        <Table.Column title="订单金额" dataIndex="payment" />
+        <Table.Column title="付款时间" dataIndex="paymentTime" />
+        <Table.Column title="付款方式" dataIndex="paymentTypeDesc" />
+        <Table.Column title="收货省市" dataIndex="receiverProvince" />
+        <Table.Column title="收货地址" dataIndex="receiverAddress" />
+        <Table.Column title="商品数量" dataIndex="orderItemVoList" />
+        <Table.Column title="订单状态" dataIndex="statusDesc" />
+        <Table.Column title="收货人姓名" dataIndex="receverName" />
+        <Table.Column
+              title="操作"
+              width={200}
+              dataIndex="orderNo"
+              cell={this.renderOper}
+            />
+          
+      </Table>
+      <Pagination
+        style={styles.pagination}
+        current={current}
+        total={this.state.total}
+        onChange={(val)=>{
+            this.setState({
+              current:val
+            },()=>{
+              this.getData()
+            })
+        }}
+      />
+    </div>:"数据拼命加载中..."
+    )
+   }
+   
   render() {
     const { isLoading, data, current, overviewData } = this.state;
 
     return (
       <div style={styles.container}>
-        <IceContainer>
-          <Filter onChange={this.handleFilterChange} />
-        </IceContainer>
-        <Overview data={overviewData} />
+       <Overview data={overviewData} />
+       {this.renderOrderTable()}
+        {/* <Overview data={overviewData} />
         <IceContainer>
           <Table loading={isLoading} dataSource={data} hasBorder={false}>
             <Table.Column title="流水号" dataIndex="serialNumber" />
@@ -165,7 +182,7 @@ export default class ReserveTable extends Component {
             current={current}
             onChange={this.handlePaginationChange}
           />
-        </IceContainer>
+        </IceContainer> */}
       </div>
     );
   }

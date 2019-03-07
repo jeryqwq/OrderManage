@@ -13,6 +13,12 @@
     ".eslintignore",
     ".eslintrc"
   ],
+  "proxyConfig": {
+    "/**": {
+      "enable": true,
+      "target": "http://127.0.0.1:3000"
+    }
+  },
   "dependencies": {
     "@alifd/next": "^1.x",
     "@antv/data-set": "^0.9.5",

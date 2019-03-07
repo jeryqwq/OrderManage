@@ -15,7 +15,7 @@ export default class TotalRevenue extends Component {
   renderList(){
  
     const cols = {
-      amount: {  alias: '总营收(万)' },
+      amount: {  alias: '总营收' },
     };
     return  <IceContainer style={{ padding: 0 }}>
     <ContainerTitle title="历史总营收" />

@@ -1,4 +1,3 @@
-const userService = require('../service/user');
 const query =require('./../mysql/connect')
 class UserController {
   async dashboard(ctx) {
@@ -38,29 +37,47 @@ class UserController {
     };
   }
 
-  async login(ctx) {
-    const { username, password } = ctx.query;
+  async orderInfos(ctx) {
+     const orderNum=await query("SELECT count(*) as val from mmall_order ")
+     const successOrderNum=await query("SELECT count(*) as val from mmall_order where `status`>=40")
+     const orderUserNum=await query("SELECT count(DISTINCT u.id )  as val from mmall_order o,mmall_user u  where u.id=o.user_id ")
+     const successUserNum=await query("SELECT count(DISTINCT u.id )  as val from mmall_order o,mmall_user u  where o.status>=40 and u.id=o.user_id ")
+     const orderSumTotal=await query("select SUM(payment) as val from mmall_order where `status`>20")
+     const successSumTotal=await query("select SUM(payment)  as val from mmall_order where `status`>40")
+     const everyMonth=await query("select count(id) as A,date_format(create_time,'%Y-%m') as year from mmall_order   GROUP BY date_format(create_time,'%Y-%m')")
+     ctx.body={
+      orderNum:[
+        {
+          title:'订单数',
+          value:orderNum[0].val
+        },
+        {
+          title: '交易成功订单数',
+          value: successOrderNum[0].val,
+        },
+        {
+          title: '订货客户数',
+          value: orderUserNum[0].val,
+        },
+        {
+          title: '交易成功客户数',
+          value: successUserNum[0].val,
+        },
+        {
+          title: '订货总金额',
+          value: `￥${orderSumTotal[0].val}`,
+        },
+        {
+          title: '交易成功总金额',
+          value: `￥${successSumTotal[0].val}`,
+        }
+      ],
+      everyMonth,
 
-    if (username === 'admin' && password === 'admin') {
-      ctx.body = {
-        status: 200,
-        statusText: 'ok',
-        currentAuthority: 'admin',
-      };
-    } else if (username === 'user' && password === 'user') {
-      ctx.body = {
-        status: 200,
-        statusText: 'ok',
-        currentAuthority: 'user',
-      };
-    } else {
-      ctx.body = {
-        status: 401,
-        statusText: 'unauthorized',
-        currentAuthority: 'guest',
-      };
     }
-  }
+
+    
+    }
 
   async register(ctx) {
     ctx.body = {

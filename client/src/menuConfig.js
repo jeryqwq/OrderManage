@@ -35,11 +35,7 @@ const asideMenuConfig = [
     path: '/order/report',
     icon: 'chart',
   },
-  {
-    name: '订单管理',
-    path: '/order/list',
-    icon: 'edit2',
-  },
+  
   {
     name: '分类管理',
     path: '/chargeback',

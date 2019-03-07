@@ -6,7 +6,6 @@ import UserLogin from './pages/UserLogin';
 import UserRegister from './pages/UserRegister';
 import Dashboard from './pages/Dashboard';
 import OrderReport from './pages/OrderReport';
-import OrderList from './pages/OrderList';
 import ChargeBack from './pages/ChargeBack';
 import Dispatch from './pages/Dispatch';
 import Goods from './pages/Goods';
@@ -30,10 +29,7 @@ const routerConfig = [
     path: '/order/report',
     component: OrderReport,
   },
-  {
-    path: '/order/list',
-    component: OrderList,
-  },
+ 
   {
     path: '/chargeback',
     component: ChargeBack,

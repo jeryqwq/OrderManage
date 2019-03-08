@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table, Pagination } from '@alifd/next';
+import { Table, Pagination,Dialog } from '@alifd/next';
 import UserAjax from './../../../../Controller/UserController'
 
 
@@ -9,7 +9,7 @@ export default class OrderTable extends Component {
     isLoading: true,
     data: undefined,
     pageSize:8,
-    total:0
+    total:0,
   };
 
   componentDidMount() {
@@ -39,8 +39,8 @@ getData(){
         payment: item.payment,
         paymentTime:item.paymentTime,
         paymentTypeDesc:item.paymentTypeDesc,
-        receiverProvince: item.shippingVo==undefined?"用户已删除该地址信息":item.shippingVo.receiverProvince,
-        receiverAddress: item.shippingVo==undefined?"用户已删除该地址信息":item.shippingVo.receiverAddress,
+        receiverProvince: item.shippingVo==undefined?"用户已删除":item.shippingVo.receiverProvince,
+        receiverAddress: item.shippingVo==undefined?"用户已删除":item.shippingVo.receiverAddress,
         orderItemVoList: item.orderItemVoList.length,
         statusDesc:item.statusDesc,
         receverName: item.statusDesc,
@@ -73,6 +73,7 @@ getData(){
           })
       }}
     />
+ 
   </div>:"数据拼命加载中..."
   )
  }

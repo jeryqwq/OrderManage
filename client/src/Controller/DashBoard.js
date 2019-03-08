@@ -6,12 +6,15 @@ const dashboard=()=>{
 const orderInfos=()=>{
     return Axios.get(api+"/orderInfos")
 }
-
+const getOrderDispatch=()=>{
+    return Axios.get(api+"/disPatch")
+}
 
 
 const DashBoard={
     dashboard,
-    orderInfos
+    orderInfos,
+    getOrderDispatch
 }
 
 

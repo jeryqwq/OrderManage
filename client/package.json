@@ -17,6 +17,10 @@
     "/**": {
       "enable": true,
       "target": "http://127.0.0.1:3000"
+    },
+    "/API": {
+      "enable": true,
+      "target": "http://localhost:8080"
     }
   },
   "dependencies": {

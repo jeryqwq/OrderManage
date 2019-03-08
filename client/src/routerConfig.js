@@ -9,8 +9,6 @@ import OrderReport from './pages/OrderReport';
 import ChargeBack from './pages/ChargeBack';
 import Dispatch from './pages/Dispatch';
 import Goods from './pages/Goods';
-import AddOrder from './pages/AddOrder';
-import AddGoods from './pages/AddGoods';
 
 const routerConfig = [
   {
@@ -29,7 +27,6 @@ const routerConfig = [
     path: '/order/report',
     component: OrderReport,
   },
- 
   {
     path: '/chargeback',
     component: ChargeBack,
@@ -41,14 +38,6 @@ const routerConfig = [
   {
     path: '/goods',
     component: Goods,
-  },
-  {
-    path: '/add/order',
-    component: AddOrder,
-  },
-  {
-    path: '/add/goods',
-    component: AddGoods,
   },
 ];
 

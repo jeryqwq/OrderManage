@@ -1,138 +1,108 @@
 import React, { Component } from 'react';
-import { Table, Pagination, Button, Dialog } from '@alifd/next';
+import { Table, Pagination, Button, Dialog,Loading,Card} from '@alifd/next';
 import IceContainer from '@icedesign/container';
-import Filter from '../Filter';
+import UserAjax from '../../../../Controller/UserController';
 
-// Random Numbers
-const random = (min, max) => {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-};
 
-// MOCK 数据，实际业务按需进行替换
-const getData = (length = 10) => {
-  return Array.from({ length }).map(() => {
-    return {
-      name: ['蓝牙音箱', '天猫精灵', '智能机器人'][random(0, 2)],
-      cate: ['数码', '智能'][random(0, 1)],
-      tag: ['新品', '预售'][random(0, 1)],
-      store: ['余杭店', '滨江店', '西湖店'][random(0, 2)],
-      sales: random(1000, 2000),
-      service: ['可预约', '可体验'][random(0, 1)],
-    };
-  });
-};
 
 export default class GoodsTable extends Component {
   state = {
     current: 1,
-    isLoading: false,
-    data: [],
+    isLoading: true,
+    data:undefined,
+    keyWord:'',
+    pageNum:1,
+    pageSize:8,
+    total:0
   };
 
   componentDidMount() {
     this.fetchData();
   }
 
-  mockApi = (len) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(getData(len));
-      }, 600);
-    });
-  };
+ 
 
-  fetchData = (len) => {
-    this.setState(
-      {
-        isLoading: true,
-      },
-      () => {
-        this.mockApi(len).then((data) => {
-          this.setState({
-            data,
-            isLoading: false,
-          });
-        });
+  fetchData (){
+    this.setState({
+      isLoading:true
+    })
+    UserAjax.adminProductList(this.state.pageNum,this.state.pageSize).then((res)=>{
+      if(res.data.status===0){
+        this.setState({
+          data:res.data.data.list,
+          total:res.data.data.total,
+          isLoading:false
+        })
       }
-    );
+    })
   };
 
-  handlePaginationChange = (current) => {
-    this.setState(
-      {
-        current,
-      },
-      () => {
-        this.fetchData();
-      }
-    );
-  };
 
-  handleFilterChange = () => {
-    this.fetchData(5);
-  };
 
-  handleDelete = () => {
+
+  handleDelete = (id) => {
     Dialog.confirm({
       title: '提示',
       content: '确认删除吗',
       onOk: () => {
-        this.fetchData(10);
+        console.log(id)
       },
     });
   };
 
-  handleDetail = () => {
-    Dialog.confirm({
-      title: '提示',
-      content: '暂不支持查看详情',
-    });
+  handleStatus = (id,status) => {
+    
   };
 
-  renderOper = () => {
-    return (
-      <div>
-        <Button
-          type="primary"
-          style={{ marginRight: '5px' }}
-          onClick={this.handleDetail}
-        >
-          详情
-        </Button>
-        <Button type="normal" warning onClick={this.handleDelete}>
-          删除
-        </Button>
-      </div>
-    );
-  };
+ 
 
   render() {
     const { isLoading, data, current } = this.state;
 
     return (
       <div style={styles.container}>
+        <Loading visible={this.state.isLoading} fullScreen shape="fusion-reactor"/>
         <IceContainer>
-          <Filter onChange={this.handleFilterChange} />
-        </IceContainer>
-        <IceContainer>
-          <Table loading={isLoading} dataSource={data} hasBorder={false}>
-            <Table.Column title="商品名称" dataIndex="name" />
-            <Table.Column title="商品分类" dataIndex="cate" />
-            <Table.Column title="商品标签" dataIndex="tag" />
-            <Table.Column title="在售门店" dataIndex="store" />
-            <Table.Column title="总销量" dataIndex="sales" />
-            <Table.Column title="商品服务" dataIndex="service" />
-            <Table.Column
-              title="操作"
-              width={200}
-              dataIndex="oper"
-              cell={this.renderOper}
-            />
-          </Table>
+          {
+            this.state.data?
+            this.state.data.map((item,index)=>
+            <Card key={index} style={{width:"25%",display:'inline-block',margin:'5px 0'}} contentHeight="auto">
+            <img src={item.mainImage} alt={item.name}  style={{height:350,width:'100%'}}/>
+            <div className="custom-card">
+                <h3>{item.name}</h3>
+                <p>{item.subtitle}</p>
+            </div>
+            <Button type="primary"
+            onClick={()=>{
+              this.handleStatus(item.id,status)
+            }}
+            >
+              上架
+            </Button>
+            <Button type="primary"
+            style={{float:"right"}}
+            onClick={()=>{
+              this.handleDelete(item.id)
+            }}
+            >
+              编辑
+            </Button>
+        </Card>
+            )
+            :"数据拼命加载中...."
+          }
           <Pagination
             style={styles.pagination}
             current={current}
-            onChange={this.handlePaginationChange}
+            total={this.state.total}
+            onChange={(val)=>{
+              this.setState({
+                pageNum:val,
+                current:val
+              },()=>{
+                this.fetchData();
+              })
+            }}
           />
         </IceContainer>
       </div>

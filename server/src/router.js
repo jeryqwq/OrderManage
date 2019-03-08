@@ -5,6 +5,6 @@ module.exports = (router) => {
   router
     .get('/dashboard', userController.dashboard)
     .get('/orderInfos', userController.orderInfos)
-    .post('/register', userController.register)
+    .get('/disPatch', userController.disPatch)
     .post('/logout', userController.logout);
 };

@@ -98,12 +98,29 @@ class UserController {
     ]
   }
 
-  async logout(ctx) {
-    ctx.body = {
-      status: 200,
-      statusText: 'ok',
-      currentAuthority: 'guest',
-    };
+  async category(ctx) {
+    const toYearCategory=await query(`SELECT count(*) as val from mmall_category where DATE_FORMAT(NOW(),"%Y")=DATE_FORMAT(create_time,"%Y")`);  
+    const countCategory=await query(`SELECT count(*)  as val from mmall_category `)
+    const orderNearCategory=await query(`select name as val from mmall_category   ORDER BY create_time desc LIMIT 0,1`);
+    const categoryArr=await query("select count(p.id) as num,c.`name` as cateName from mmall_category c,mmall_product p where c.id=p.category_id  GROUP BY c.id")
+    console.log(toYearCategory)
+    ctx.body={
+      dataArr:[ {
+        title: '总分类个数',
+        value: countCategory[0].val,
+      },
+      {
+        title: '今年新增分类(个)',
+        value:toYearCategory[0].val,
+      },
+      {
+        title: '最近新增分类',
+        value: orderNearCategory[0].val,
+      },
+    ],
+    categoryArr
+    }
+
   }
 }
 

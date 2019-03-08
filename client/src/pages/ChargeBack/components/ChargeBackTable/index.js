@@ -1,128 +1,188 @@
 import React, { Component } from 'react';
-import { Table, Pagination } from '@alifd/next';
+import { Table, Button, Message,Dialog, Input } from '@alifd/next';
 import IceContainer from '@icedesign/container';
-import TableFilter from './TableFilter';
 import Overview from '../../../../components/Overview';
+import Dashboard from './../../../../Controller/DashBoard'
+import { Chart, Geom, Axis, Tooltip } from 'bizcharts';
+import UserAjax from '../../../../Controller/UserController';
 
-// Random Numbers
-const random = (min, max) => {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-};
 
-// MOCK 数据，实际业务按需进行替换
-const getOverviewData = () => {
-  return [
-    {
-      title: '退货单(笔)',
-      value: random(10000, 50000),
-    },
-    {
-      title: '退货数量(件)',
-      value: random(5000, 10000),
-    },
-    {
-      title: '退货金额(元)',
-      value: random(10000, 100000),
-    },
-  ];
-};
-
-const getTableData = (length = 10) => {
-  return Array.from({ length }).map(() => {
-    return {
-      backOrder: random(10000000, 100000000),
-      customerName: ['淘小宝', '淘二宝'][random(0, 1)],
-      orderTime: `2018-12-1${random(1, 9)}`,
-      commodityCode: random(10000000, 100000000),
-      commodityName: ['蓝牙音箱', '天猫精灵', '智能机器人'][random(0, 2)],
-      price: ['￥99', '￥199', '￥299'][random(0, 2)],
-    };
-  });
-};
 
 export default class ChargeBackTable extends Component {
   state = {
-    current: 1,
     isLoading: false,
     data: [],
-    overviewData: getOverviewData(),
+    overviewData:undefined,
+    renderData:undefined,
+    parentId:0,
+    categoryData:undefined,
+    visible:false,
+    cateName:''
   };
 
   componentDidMount() {
-    this.fetchData();
+    this.getData()
   }
-
-  mockApi = (len) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(getTableData(len));
-      }, 600);
-    });
-  };
-
-  fetchData = (len) => {
-    this.setState(
-      {
-        isLoading: true,
-      },
-      () => {
-        this.mockApi(len).then((data) => {
-          this.setState({
-            data,
-            isLoading: false,
-            overviewData: getOverviewData(),
-          });
-        });
+  getData(){
+    Dashboard.category().then((res)=>{
+      this.setState({
+        overviewData:res.data.dataArr,
+        renderData:res.data.categoryArr
+      })
+    })
+    UserAjax.getChildrenCate(this.state.parentId).then((res)=>{
+      if(res.data.status===0){
+        this.setState({
+          categoryData:res.data.data
+        })
       }
-    );
-  };
-
-  handlePaginationChange = (current) => {
-    this.setState(
-      {
-        current,
-      },
-      () => {
-        this.fetchData();
-      }
-    );
-  };
-
-  handleFilterChange = () => {
-    this.fetchData(5);
-  };
-
-  renderOper = () => {
-    return (
-      <div>
-        <a style={styles.link}>详情</a>
-        <span style={styles.separator} />
-        <a style={styles.link}>申请权限</a>
-      </div>
-    );
-  };
-
+    })
+  }
+ 
+ 
+  
   render() {
-    const { isLoading, data, current, overviewData } = this.state;
-
+    const { isLoading, overviewData ,categoryData} = this.state;
+    const that=this;
+    const cols = {
+      amount: { alias: '数量' },
+    };
+    function insertCategory (){
+      //todo 插入
+      UserAjax.insertCategory(that.state.parentId,that.state.cateName).then((res)=>{
+        if(res.data.status===0){
+          that.getData();
+          Message.success("插入成功!!!")         
+      }
+    })
+      
+    }
+    function renderCateStatus(value){
+      for (const key in categoryData) {
+        const element = categoryData[key];
+        if(element.id===value){
+          return element.status===0?"上架":"下架"
+        }
+    }
+    }
+    const renderSub =val =>{
+      return <span>
+        <Button type='primary'
+        onClick={()=>{
+          UserAjax.getChildrenCate(val).then((res)=>{
+            if(res.data.status===0){
+              this.setState({
+                parentId:val,
+                categoryData:res.data.data
+              })
+            }else{
+              Message.error("该分类无子分类")
+            }
+          })
+        }}
+      >
+          查看子分类
+      </Button>
+      <Button type='secondary'
+      onClick={()=>{
+        this.setState({
+          parentId:0
+        },()=>{
+          this.getData()
+        })
+      }}>
+        返回
+      </Button>
+      </span>
+    }
+    const renderAction = value => {
+      return <span>
+        <Button type="primary"
+        onClick={()=>{
+          this.setState({
+            visible:true
+          })
+        }}
+        >插入子分类</Button>
+        <Button type="normal"
+        onClick={()=>{
+          //todo 插入子分类
+        }}
+        >
+        {
+          renderCateStatus(value)
+        }
+        </Button>
+      </span>;
+  };
     return (
       <div>
-        <TableFilter onChange={this.handleFilterChange} />
-        <Overview data={overviewData} col="3" />
+        {
+          this.state.overviewData?<Overview data={overviewData} col="3" />:"分类数据加载中...."
+        }
+    <Chart
+      height={300}
+      forceFit
+      padding={[60, 40]}
+      data={this.state.renderData}
+      scale={cols}
+    >
+      <Tooltip
+        crosshairs={{
+          type: 'y',
+        }}
+      />
+      <Axis />
+      <Geom
+        type="area"
+        position="cateName*num"
+        color="#447eff"
+        shape="smooth"
+      />
+      <Geom
+        type="line"
+        position="cateName*num"
+        color="#447eff"
+        size={2}
+        shape="smooth"
+      />
+    </Chart>
+    <Dialog title="订单详情"
+      visible={this.state.visible}
+      isFullScreen={false}
+      footerActions={["ok"]}
+      footerAlign={"right"}
+      onOk={()=>{this.setState({visible:false})
+        insertCategory()
+    }}
+      onCancel={()=>{this.setState({visible:false})}}
+      onClose={()=>{this.setState({visible:false})}}>
+      <Input  placeholder="请输入分类名称"
+      onChange={(val)=>{
+        this.setState({
+          cateName:val
+        })
+      }}
+      />
+    </Dialog>
         <IceContainer>
-          <Table loading={isLoading} dataSource={data} hasBorder={false}>
-            <Table.Column title="退单号" dataIndex="backOrder" />
-            <Table.Column title="客户名称" dataIndex="customerName" />
-            <Table.Column title="下单时间" dataIndex="orderTime" />
-            <Table.Column title="商品编码" dataIndex="commodityCode" />
-            <Table.Column title="商品名称" dataIndex="commodityName" />
-            <Table.Column title="价格" dataIndex="price" />
+          <Table loading={isLoading} dataSource={this.state.categoryData} hasBorder={false}>
+            <Table.Column title="分类ID" dataIndex="id" />
+            <Table.Column title="分类名称" dataIndex="name" />
+            <Table.Column title="父分类ID" dataIndex="parentId" />
+            <Table.Column title="创建时间" dataIndex="createTime" />
+            <Table.Column title="修改时间" dataIndex="updateTime" />
+            <Table.Column  title="查看子分类" 
+            dataIndex="id"
+            cell={renderSub}
+            />
+            <Table.Column  title="操作" 
+            dataIndex="id"
+            cell={renderAction}
+            />
+           
           </Table>
-          <Pagination
-            style={styles.pagination}
-            current={current}
-            onChange={this.handlePaginationChange}
-          />
+        
         </IceContainer>
       </div>
     );

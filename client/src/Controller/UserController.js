@@ -28,6 +28,15 @@ const adminProductList=(pageNum,pageSize)=>{
 const adminSearch=(productName,pageNum,pageSize)=>{
     return Axios.post(`/manage/product/search.do?pageSize=${pageSize}&pageNum=${pageNum}&productName=${productName}`) 
 }
+const setProductStatus=(productId,status)=>{
+    return Axios.post(`/manage/product/setSalStatus.do?productId=${productId}&status=${status}`)
+}
+const getChildrenCate=(parentId)=>{
+    return Axios.post(`/manage/category/getChildrenCategory.do?parentId=${parentId}`)
+}
+const insertCategory=(parentId,categoryName)=>{
+    return Axios.post(`/manage/category/addCategory.do?parentId=${parentId}&categoryName=${categoryName}`)
+}
 const UserAjax={
         login,
         autoLogin,
@@ -35,7 +44,10 @@ const UserAjax={
         orderList,
         sendGood,
         adminProductList,
-        adminSearch
+        adminSearch,
+        setProductStatus,
+        getChildrenCate,
+        insertCategory
     }
 
 

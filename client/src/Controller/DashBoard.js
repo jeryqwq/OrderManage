@@ -9,13 +9,14 @@ const orderInfos=()=>{
 const getOrderDispatch=()=>{
     return Axios.get(api+"/disPatch")
 }
+const category=()=>{
+    return Axios.get(api+"/category")
 
-
+}
 const DashBoard={
     dashboard,
     orderInfos,
-    getOrderDispatch
+    getOrderDispatch,
+    category
 }
-
-
 export default DashBoard

@@ -62,3 +62,4 @@ server 用于组织服务端的相关的代码，即常见的 MVC 的组织方�
 #### 配置
 
 公共配置包含代码风格、eslint 等基础配置，在整个应用中，前后端各自使用一套基础配置。
+数据库在主目录Mysql.sql中，主要处理多条mysql异步查询,前台在本帐号MallAPP[https://github.com/jeryqwq/MallApp]中，后台基础服务在[https://github.com/jeryqwq/ImoccMallofJava]中

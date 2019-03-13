@@ -37,6 +37,9 @@ const getChildrenCate=(parentId)=>{
 const insertCategory=(parentId,categoryName)=>{
     return Axios.post(`/manage/category/addCategory.do?parentId=${parentId}&categoryName=${categoryName}`)
 }
+const updateCategory=(categoryName,parentId)=>{
+    return Axios.post(`/manage/category/updateCategory.do?categoryName=${categoryName}&parentId=${parentId}`)
+}
 const UserAjax={
         login,
         autoLogin,
@@ -47,7 +50,8 @@ const UserAjax={
         adminSearch,
         setProductStatus,
         getChildrenCate,
-        insertCategory
+        insertCategory,
+        updateCategory
     }
 
 

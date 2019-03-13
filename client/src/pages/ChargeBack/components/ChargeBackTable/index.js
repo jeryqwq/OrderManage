@@ -5,9 +5,10 @@ import Overview from '../../../../components/Overview';
 import Dashboard from './../../../../Controller/DashBoard'
 import { Chart, Geom, Axis, Tooltip } from 'bizcharts';
 import UserAjax from '../../../../Controller/UserController';
+import moment from 'moment';
 
 
-
+let type=0
 export default class ChargeBackTable extends Component {
   state = {
     isLoading: false,
@@ -48,7 +49,6 @@ export default class ChargeBackTable extends Component {
       amount: { alias: '数量' },
     };
     function insertCategory (){
-      //todo 插入
       UserAjax.insertCategory(that.state.parentId,that.state.cateName).then((res)=>{
         if(res.data.status===0){
           that.getData();
@@ -57,13 +57,20 @@ export default class ChargeBackTable extends Component {
     })
       
     }
-    function renderCateStatus(value){
-      for (const key in categoryData) {
-        const element = categoryData[key];
-        if(element.id===value){
-          return element.status===0?"上架":"下架"
+ 
+    function updataCategory(){
+      UserAjax.updateCategory(that.state.cateName,that.state.parentId).then((res)=>{
+        if(res.data.status===0){
+          Message.success("修改成功!!!");
+          that.setState({
+            parentId:0
+          },()=>{
+            that.getData()
+          })
+        }else{
+          Message.error("更新失败!!")
         }
-    }
+      })
     }
     const renderSub =val =>{
       return <span>
@@ -101,17 +108,20 @@ export default class ChargeBackTable extends Component {
         onClick={()=>{
           this.setState({
             visible:true
-          })
+          });
+          type=0;
         }}
         >插入子分类</Button>
         <Button type="normal"
         onClick={()=>{
-          //todo 插入子分类
+          this.setState({
+            visible:true,
+            parentId:value
+          })
+          type=1;
         }}
         >
-        {
-          renderCateStatus(value)
-        }
+        修改
         </Button>
       </span>;
   };
@@ -147,13 +157,13 @@ export default class ChargeBackTable extends Component {
         shape="smooth"
       />
     </Chart>
-    <Dialog title="订单详情"
+    <Dialog title="请输入信息"
       visible={this.state.visible}
       isFullScreen={false}
       footerActions={["ok"]}
       footerAlign={"right"}
       onOk={()=>{this.setState({visible:false})
-        insertCategory()
+        type===0?insertCategory():updataCategory()
     }}
       onCancel={()=>{this.setState({visible:false})}}
       onClose={()=>{this.setState({visible:false})}}>
@@ -170,8 +180,12 @@ export default class ChargeBackTable extends Component {
             <Table.Column title="分类ID" dataIndex="id" />
             <Table.Column title="分类名称" dataIndex="name" />
             <Table.Column title="父分类ID" dataIndex="parentId" />
-            <Table.Column title="创建时间" dataIndex="createTime" />
-            <Table.Column title="修改时间" dataIndex="updateTime" />
+            <Table.Column title="创建时间" dataIndex="createTime"
+            cell={(val)=>{
+             return moment(val).format("YYYY-MM-DD HH:mm:ss")
+            }}
+            />
+          
             <Table.Column  title="查看子分类" 
             dataIndex="id"
             cell={renderSub}

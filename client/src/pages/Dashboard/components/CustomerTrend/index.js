@@ -13,14 +13,7 @@ export default class OrderCate extends Component {
     })
   }
   renderList(){
-    const data = [
-      { month: '1', customer: 38 },
-      { month: '2', customer: 52 },
-      { month: '3', customer: 61 },
-      { month: '4', customer: 80 },
-      { month: '5', customer: 65 },
-      { month: '6', customer: 60 },
-    ];
+   
     const cols = {
       num: {  alias: '订单数量' },
     };
